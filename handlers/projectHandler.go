@@ -36,6 +36,12 @@ func GetProjects(c *gin.Context) {
 	var projects []models.Project
 	var resProjects []models.Resproject
 	initializers.DB.Where("Owner_id = ?", user.ID).Find(&projects)
+	if len(projects) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "у вас нет проектов",
+		})
+		return
+	}
 	for _, project := range projects {
 		resproject := models.Resproject{
 			ID:          project.ID,
@@ -47,12 +53,6 @@ func GetProjects(c *gin.Context) {
 		resProjects = append(resProjects, resproject)
 	}
 	fmt.Println(projects)
-	if projects == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "у вас нет проектов",
-		})
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{
 		"projects": resProjects,
 	})
@@ -62,11 +62,11 @@ func GetProject(c *gin.Context) {
 	user := services.GetUser(c)
 	projectId := c.Param("id")
 	var project models.Project
+	result := initializers.DB.First(&project, "ID = ?", projectId)
 	if user.ID != project.Owner_id {
 		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра данного проекта"})
 		return
 	}
-	result := initializers.DB.First(&project, "ID = ?", projectId)
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return

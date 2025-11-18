@@ -26,6 +26,7 @@ func main() {
 	r.PATCH("/projects/:id", middleware.AuthCheck, handlers.EditProject)
 	r.DELETE("/projects/:id", middleware.AuthCheck, handlers.DeleteProject)
 	r.POST("/projects/:id/tasks", middleware.AuthCheck, handlers.CreateTask)
+	r.GET("/projects/:id/tasks", middleware.AuthCheck, handlers.GetTasks)
 
 	r.Run()
 }

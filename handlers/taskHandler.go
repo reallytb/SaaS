@@ -36,5 +36,44 @@ func CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"message": message,
 	})
+}
 
+func GetTasks(c *gin.Context) {
+	user := services.GetUser(c)
+	projectId := c.Param("id")
+	var project models.Project
+	result := initializers.DB.First(&project, "ID = ?", projectId)
+	if user.ID != project.Owner_id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задач данного проекта"})
+		return
+	}
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
+		return
+	}
+	var tasks []models.Task
+	var respTasks []models.Resptask
+	initializers.DB.Where("Project_id = ?", project.ID).Find(&tasks)
+	if len(tasks) == 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "у проекта нет задач",
+		})
+		return
+	}
+	for _, task := range tasks {
+		respTask := models.Resptask{
+			ID:          task.ID,
+			Title:       task.Title,
+			Description: task.Description,
+			Status:      task.Status,
+			Priority:    task.Priority,
+			Due_date:    services.TimeFormat(task.Due_date),
+			Created_at:  services.TimeFormat(task.CreatedAt),
+			Updated_at:  services.TimeFormat(task.UpdatedAt),
+		}
+		respTasks = append(respTasks, respTask)
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"tasks": respTasks,
+	})
 }
