@@ -35,7 +35,7 @@ func GetProjects(c *gin.Context) {
 	user := services.GetUser(c)
 	var projects []models.Project
 	var resProjects []models.Resproject
-	initializers.DB.Limit(20).Find(&projects).Where("id = ?", user.ID)
+	initializers.DB.Where("Owner_id = ?", user.ID).Find(&projects)
 	for _, project := range projects {
 		resproject := models.Resproject{
 			ID:          project.ID,
@@ -47,6 +47,12 @@ func GetProjects(c *gin.Context) {
 		resProjects = append(resProjects, resproject)
 	}
 	fmt.Println(projects)
+	if projects == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "у вас нет проектов",
+		})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"projects": resProjects,
 	})

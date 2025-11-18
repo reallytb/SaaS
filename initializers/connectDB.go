@@ -1,6 +1,8 @@
 package initializers
 
 import (
+	"os"
+
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 
@@ -10,9 +12,12 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
-	var err error
-	DB, err = gorm.Open(sqlite.Open("SaaS.db"), &gorm.Config{})
+	_, err := os.Stat("SaaS.db")
+	if err != nil {
+		os.Create("SaaS.db")
+	}
 
+	DB, err = gorm.Open(sqlite.Open("SaaS.db"), &gorm.Config{})
 	if err != nil {
 		panic("ошибка открытия базы данных")
 	}
