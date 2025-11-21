@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -108,4 +109,93 @@ func GetTask(c *gin.Context) {
 		Updated_at:  services.TimeFormat(task.UpdatedAt),
 	}
 	c.JSON(http.StatusOK, respTask)
+}
+
+func EditTask(c *gin.Context) {
+	user := services.GetUser(c)
+	taskId := c.Param("id")
+	var project models.Project
+	var task models.Task
+	result := initializers.DB.First(&task, "ID = ?", taskId)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "задача не найдена"})
+		return
+	}
+	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
+	if user.ID != project.Owner_id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задачи данного проекта"})
+		return
+	}
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "проект задачи не найден"})
+		return
+	}
+	if c.Bind(&task) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
+		return
+	}
+	result = initializers.DB.Model(&task).UpdateColumn("title", task.Title)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка изменения названия задачи"})
+		return
+	}
+	result = initializers.DB.Model(&task).UpdateColumn("description", task.Description)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка изменения описания задачи"})
+		return
+	}
+	result = initializers.DB.Model(&task).UpdateColumn("due_date", task.Due_date)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка изменения срока задачи"})
+		return
+	}
+	result = initializers.DB.Model(&task).UpdateColumn("priority", task.Priority)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка изменения приоритета задачи"})
+		return
+	}
+	result = initializers.DB.Model(&task).UpdateColumn("status", task.Status)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка изменения статуса задачи"})
+		return
+	}
+	result = initializers.DB.Model(&task).UpdateColumn("updated_at", time.Now())
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка изменения времени изменения задачи"})
+		return
+	}
+	message := fmt.Sprintf("задача %s успешно изменена", task.Title)
+	c.JSON(http.StatusOK, gin.H{
+		"message": message,
+	})
+}
+
+func DeleteTask(c *gin.Context) {
+	user := services.GetUser(c)
+	taskId := c.Param("id")
+	var project models.Project
+	var task models.Task
+	result := initializers.DB.First(&task, "ID = ?", taskId)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "задача не найдена"})
+		return
+	}
+	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
+	if user.ID != project.Owner_id {
+		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задачи данного проекта"})
+		return
+	}
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "проект задачи не найден"})
+		return
+	}
+	result = initializers.DB.Delete(&task, "ID = ?", task.ID)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка удаления задачи"})
+		return
+	}
+	message := fmt.Sprintf("задача %s успешно удалёна", task.Title)
+	c.JSON(http.StatusOK, gin.H{
+		"message": message,
+	})
 }
