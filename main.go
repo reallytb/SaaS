@@ -34,6 +34,8 @@ func main() {
 	r.DELETE("/tasks/:id", middleware.AuthCheck, handlers.DeleteTask)
 
 	r.POST("/tasks/:id/comments", middleware.AuthCheck, handlers.CreateComment)
+	r.GET("/tasks/:id/comments", middleware.AuthCheck, handlers.GetComments)
+	r.DELETE("/comments/:id", middleware.AuthCheck, handlers.DeleteComment)
 
 	r.Run()
 }
