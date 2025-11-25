@@ -37,5 +37,8 @@ func main() {
 	r.GET("/tasks/:id/comments", middleware.AuthCheck, handlers.GetComments)
 	r.DELETE("/comments/:id", middleware.AuthCheck, handlers.DeleteComment)
 
+	r.POST("/projects/:id/share", middleware.AuthCheck, handlers.CreatePermission)
+	r.DELETE("/projects/:id/share/:user_id", middleware.AuthCheck, handlers.DeletePermission)
+
 	r.Run()
 }

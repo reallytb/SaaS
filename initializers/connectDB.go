@@ -28,4 +28,5 @@ func SyncDB() {
 	DB.AutoMigrate(&models.Project{})
 	DB.AutoMigrate(&models.Task{})
 	DB.AutoMigrate(&models.Comment{})
+	DB.AutoMigrate(&models.Permission{})
 }

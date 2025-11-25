@@ -23,13 +23,15 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задачи данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект задачи не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для создания комментария к задаче данного проекта"})
+			return
+		}
 	}
 	if c.Bind(&comment) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
@@ -59,13 +61,15 @@ func GetComments(c *gin.Context) {
 		return
 	}
 	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задач данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра комментария задачи данного проекта"})
+			return
+		}
 	}
 	var comments []models.Comment
 	var respComments []models.RespComment
@@ -108,13 +112,15 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задач данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления комментария к задаче данного проекта"})
+			return
+		}
 	}
 	result = initializers.DB.Delete(&comment, "ID = ?", commentId)
 	if result.Error != nil {

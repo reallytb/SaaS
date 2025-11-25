@@ -17,20 +17,21 @@ func CreateTask(c *gin.Context) {
 	projectId := c.Param("id")
 	var task models.Task
 	if err := c.Bind(&task); err != nil {
-		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка получения тела запроса"})
 		return
 	}
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
 	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка получения тела запроса"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
 	}
 	task.Project_id = project.ID
-	if project.Owner_id != user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для создания задачи в данном проекте"})
-		return
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для создания задачи в данном проекте"})
+			return
+		}
 	}
 	initializers.DB.Create(&task)
 	message := fmt.Sprintf("задача %s создана", task.Title)
@@ -44,13 +45,15 @@ func GetTasks(c *gin.Context) {
 	projectId := c.Param("id")
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задач данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра задач данного проекта"})
+			return
+		}
 	}
 	var tasks []models.Task
 	var respTasks []models.Resptask
@@ -90,13 +93,15 @@ func GetTask(c *gin.Context) {
 		return
 	}
 	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задачи данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект задачи не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра задачи данного проекта"})
+			return
+		}
 	}
 	respTask := models.Resptask{
 		ID:          task.ID,
@@ -122,13 +127,15 @@ func EditTask(c *gin.Context) {
 		return
 	}
 	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задачи данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект задачи не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для редактирования задачи данного проекта"})
+			return
+		}
 	}
 	if c.Bind(&task) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
@@ -181,13 +188,15 @@ func DeleteTask(c *gin.Context) {
 		return
 	}
 	result = initializers.DB.First(&project, "ID = ?", task.Project_id)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра задачи данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект задачи не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления задачи данного проекта"})
+			return
+		}
 	}
 	result = initializers.DB.Delete(&task, "ID = ?", task.ID)
 	if result.Error != nil {

@@ -37,6 +37,13 @@ type Comment struct {
 	Content string `json:"content,omitempty"`
 }
 
+type Permission struct {
+	gorm.Model
+	Project_id uint   `json:"project_id,omitempty"`
+	User_id    uint   `json:"user_id,omitempty"`
+	Role       string `json:"role,omitempty"`
+}
+
 type Resproject struct {
 	ID          uint   `json:"id"`
 	Name        string `json:"name"`

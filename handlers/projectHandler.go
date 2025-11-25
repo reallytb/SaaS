@@ -63,13 +63,15 @@ func GetProject(c *gin.Context) {
 	projectId := c.Param("id")
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
-	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для просмотра данного проекта"})
-		return
-	}
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
+	}
+	if user.ID != project.Owner_id {
+		if services.PermissionCheck(c, project) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра данного проекта"})
+			return
+		}
 	}
 	resproject := models.Resproject{
 		ID:          project.ID,
@@ -91,8 +93,10 @@ func EditProject(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для редактирования данного проекта"})
-		return
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для редактирования данного проекта"})
+			return
+		}
 	}
 	if c.Bind(&project) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
@@ -134,8 +138,10 @@ func DeleteProject(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		c.JSON(http.StatusForbidden, gin.H{"error": "нет прав для удаления данного проекта"})
-		return
+		if services.PermissionCheck(c, project) != 2 {
+			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления данного проекта"})
+			return
+		}
 	}
 	result = initializers.DB.Delete(&project, "ID = ?", projectId)
 	if result.Error != nil {
