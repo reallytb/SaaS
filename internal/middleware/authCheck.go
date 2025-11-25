@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
-	"SaaS/initializers"
-	"SaaS/models"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
 )
 
 func AuthCheck(c *gin.Context) {

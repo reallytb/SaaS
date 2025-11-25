@@ -6,13 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"SaaS/initializers"
-	"SaaS/models"
-	"SaaS/services"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
+	"SaaS/pkg/utils"
 )
 
 func CreateComment(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	taskId := c.Param("id")
 	var project models.Project
 	var task models.Task
@@ -28,13 +28,17 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для создания комментария к задаче данного проекта"})
 			return
 		}
 	}
 	if c.Bind(&comment) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
+		return
+	}
+	if comment.Content == "" || len(comment.Content) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "комментарий не может быть пустым"})
 		return
 	}
 	comment.Task_id = task.ID
@@ -51,7 +55,7 @@ func CreateComment(c *gin.Context) {
 }
 
 func GetComments(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	taskId := c.Param("id")
 	var project models.Project
 	var task models.Task
@@ -66,7 +70,7 @@ func GetComments(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) == 0 {
+		if utils.PermissionCheck(user, project) == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра комментария задачи данного проекта"})
 			return
 		}
@@ -86,7 +90,7 @@ func GetComments(c *gin.Context) {
 			TaskTitle:  task.Title,
 			UserName:   user.Name,
 			Content:    comment.Content,
-			Created_at: services.TimeFormat(comment.CreatedAt),
+			Created_at: utils.TimeFormat(comment.CreatedAt),
 		}
 		respComments = append(respComments, respComment)
 	}
@@ -96,7 +100,7 @@ func GetComments(c *gin.Context) {
 }
 
 func DeleteComment(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	commentId := c.Param("id")
 	var project models.Project
 	var task models.Task
@@ -117,7 +121,7 @@ func DeleteComment(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления комментария к задаче данного проекта"})
 			return
 		}

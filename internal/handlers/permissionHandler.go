@@ -6,13 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"SaaS/initializers"
-	"SaaS/models"
-	"SaaS/services"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
+	"SaaS/pkg/utils"
 )
 
 func CreatePermission(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	var project models.Project
 	var permission models.Permission
@@ -64,7 +64,7 @@ func CreatePermission(c *gin.Context) {
 }
 
 func DeletePermission(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	userId := c.Param("user_id")
 	var project models.Project

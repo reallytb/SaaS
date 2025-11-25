@@ -1,11 +1,11 @@
-package services
+package utils
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"SaaS/models"
+	"SaaS/internal/models"
 )
 
 func GetUser(c *gin.Context) models.User {

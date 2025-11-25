@@ -10,9 +10,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"SaaS/initializers"
-	"SaaS/models"
-	"SaaS/services"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
+	"SaaS/pkg/utils"
 )
 
 func SignUp(c *gin.Context) {
@@ -22,12 +22,16 @@ func SignUp(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
 		return
 	}
-	if !services.EmailVerification(user.Email) {
+	if !utils.EmailVerification(user.Email) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "введён некорректный адрес электронной почты"})
 		return
 	}
 	if len(user.Password_hash) < 6 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "минимальная длина пароля - 6 символов"})
+		return
+	}
+	if user.Name == "" || len(user.Name) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "имя пользователя не может быть пустым"})
 		return
 	}
 
@@ -105,7 +109,7 @@ func SignOut(c *gin.Context) {
 }
 
 func Me(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	c.JSON(http.StatusOK, gin.H{
 		"email": user.Email,
 		"name":  user.Name,

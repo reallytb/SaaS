@@ -6,7 +6,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 
-	"SaaS/models"
+	"SaaS/internal/models"
 )
 
 var DB *gorm.DB

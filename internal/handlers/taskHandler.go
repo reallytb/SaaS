@@ -7,17 +7,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"SaaS/initializers"
-	"SaaS/models"
-	"SaaS/services"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
+	"SaaS/pkg/utils"
 )
 
 func CreateTask(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	var task models.Task
 	if err := c.Bind(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка получения тела запроса"})
+		return
+	}
+	if task.Title == "" || len(task.Title) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "название задачи не может быть пустым"})
 		return
 	}
 	var project models.Project
@@ -28,7 +32,7 @@ func CreateTask(c *gin.Context) {
 	}
 	task.Project_id = project.ID
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для создания задачи в данном проекте"})
 			return
 		}
@@ -41,7 +45,7 @@ func CreateTask(c *gin.Context) {
 }
 
 func GetTasks(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
@@ -50,7 +54,7 @@ func GetTasks(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) == 0 {
+		if utils.PermissionCheck(user, project) == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра задач данного проекта"})
 			return
 		}
@@ -71,9 +75,9 @@ func GetTasks(c *gin.Context) {
 			Description: task.Description,
 			Status:      task.Status,
 			Priority:    task.Priority,
-			Due_date:    services.TimeFormat(task.Due_date),
-			Created_at:  services.TimeFormat(task.CreatedAt),
-			Updated_at:  services.TimeFormat(task.UpdatedAt),
+			Due_date:    utils.TimeFormat(task.Due_date),
+			Created_at:  utils.TimeFormat(task.CreatedAt),
+			Updated_at:  utils.TimeFormat(task.UpdatedAt),
 		}
 		respTasks = append(respTasks, respTask)
 	}
@@ -83,7 +87,7 @@ func GetTasks(c *gin.Context) {
 }
 
 func GetTask(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	taskId := c.Param("id")
 	var project models.Project
 	var task models.Task
@@ -98,7 +102,7 @@ func GetTask(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) == 0 {
+		if utils.PermissionCheck(user, project) == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра задачи данного проекта"})
 			return
 		}
@@ -109,15 +113,15 @@ func GetTask(c *gin.Context) {
 		Description: task.Description,
 		Status:      task.Status,
 		Priority:    task.Priority,
-		Due_date:    services.TimeFormat(task.Due_date),
-		Created_at:  services.TimeFormat(task.CreatedAt),
-		Updated_at:  services.TimeFormat(task.UpdatedAt),
+		Due_date:    utils.TimeFormat(task.Due_date),
+		Created_at:  utils.TimeFormat(task.CreatedAt),
+		Updated_at:  utils.TimeFormat(task.UpdatedAt),
 	}
 	c.JSON(http.StatusOK, respTask)
 }
 
 func EditTask(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	taskId := c.Param("id")
 	var project models.Project
 	var task models.Task
@@ -132,7 +136,7 @@ func EditTask(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для редактирования задачи данного проекта"})
 			return
 		}
@@ -178,7 +182,7 @@ func EditTask(c *gin.Context) {
 }
 
 func DeleteTask(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	taskId := c.Param("id")
 	var project models.Project
 	var task models.Task
@@ -193,7 +197,7 @@ func DeleteTask(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления задачи данного проекта"})
 			return
 		}

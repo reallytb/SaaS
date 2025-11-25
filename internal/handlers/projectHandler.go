@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"SaaS/initializers"
-	"SaaS/models"
-	"SaaS/services"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
+	"SaaS/pkg/utils"
 )
 
 func CreateProject(c *gin.Context) {
@@ -18,7 +18,11 @@ func CreateProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка чтения тела запроса"})
 		return
 	}
-	user := services.GetUser(c)
+	if project.Name == "" || len(project.Name) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "название проекта не может быть пустым"})
+		return
+	}
+	user := utils.GetUser(c)
 	project.Owner_id = user.ID
 	result := initializers.DB.Create(&project)
 	if result.Error != nil {
@@ -32,7 +36,7 @@ func CreateProject(c *gin.Context) {
 }
 
 func GetProjects(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	var projects []models.Project
 	var resProjects []models.Resproject
 	initializers.DB.Where("Owner_id = ?", user.ID).Find(&projects)
@@ -47,8 +51,8 @@ func GetProjects(c *gin.Context) {
 			ID:          project.ID,
 			Name:        project.Name,
 			Description: project.Description,
-			Created_at:  services.TimeFormat(project.CreatedAt),
-			Updated_at:  services.TimeFormat(project.UpdatedAt),
+			Created_at:  utils.TimeFormat(project.CreatedAt),
+			Updated_at:  utils.TimeFormat(project.UpdatedAt),
 		}
 		resProjects = append(resProjects, resproject)
 	}
@@ -59,7 +63,7 @@ func GetProjects(c *gin.Context) {
 }
 
 func GetProject(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
@@ -68,7 +72,7 @@ func GetProject(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) == 0 {
+		if utils.PermissionCheck(user, project) == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра данного проекта"})
 			return
 		}
@@ -77,14 +81,14 @@ func GetProject(c *gin.Context) {
 		ID:          project.ID,
 		Name:        project.Name,
 		Description: project.Description,
-		Created_at:  services.TimeFormat(project.CreatedAt),
-		Updated_at:  services.TimeFormat(project.UpdatedAt),
+		Created_at:  utils.TimeFormat(project.CreatedAt),
+		Updated_at:  utils.TimeFormat(project.UpdatedAt),
 	}
 	c.JSON(http.StatusOK, resproject)
 }
 
 func EditProject(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
@@ -93,7 +97,7 @@ func EditProject(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для редактирования данного проекта"})
 			return
 		}
@@ -122,14 +126,14 @@ func EditProject(c *gin.Context) {
 		ID:          project.ID,
 		Name:        project.Name,
 		Description: project.Description,
-		Created_at:  services.TimeFormat(project.CreatedAt),
-		Updated_at:  services.TimeFormat(project.UpdatedAt),
+		Created_at:  utils.TimeFormat(project.CreatedAt),
+		Updated_at:  utils.TimeFormat(project.UpdatedAt),
 	}
 	c.JSON(http.StatusOK, resproject)
 }
 
 func DeleteProject(c *gin.Context) {
-	user := services.GetUser(c)
+	user := utils.GetUser(c)
 	projectId := c.Param("id")
 	var project models.Project
 	result := initializers.DB.First(&project, "ID = ?", projectId)
@@ -138,7 +142,7 @@ func DeleteProject(c *gin.Context) {
 		return
 	}
 	if user.ID != project.Owner_id {
-		if services.PermissionCheck(c, project) != 2 {
+		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления данного проекта"})
 			return
 		}

@@ -1,4 +1,4 @@
-package services
+package utils
 
 import (
 	emailverifier "github.com/AfterShip/email-verifier"

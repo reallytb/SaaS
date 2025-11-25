@@ -1,14 +1,11 @@
-package services
+package utils
 
 import (
-	"github.com/gin-gonic/gin"
-
-	"SaaS/initializers"
-	"SaaS/models"
+	"SaaS/internal/initializers"
+	"SaaS/internal/models"
 )
 
-func PermissionCheck(c *gin.Context, project models.Project) int {
-	user := GetUser(c)
+func PermissionCheck(user models.User, project models.Project) int {
 	var permission models.Permission
 	result := initializers.DB.First(&permission, "user_id = ? AND project_id = ?", user.ID, project.ID)
 	if result.Error != nil {
