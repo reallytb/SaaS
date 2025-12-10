@@ -23,7 +23,7 @@ func CreateProject(c *gin.Context) {
 		return
 	}
 	user := utils.GetUser(c)
-	project.Owner_id = user.ID
+	project.OwnerId = user.ID
 	result := initializers.DB.Create(&project)
 	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ошибка создания проекта"})
@@ -51,8 +51,8 @@ func GetProjects(c *gin.Context) {
 			ID:          project.ID,
 			Name:        project.Name,
 			Description: project.Description,
-			Created_at:  utils.TimeFormat(project.CreatedAt),
-			Updated_at:  utils.TimeFormat(project.UpdatedAt),
+			CreatedAt:   utils.TimeFormat(project.CreatedAt),
+			UpdatedAt:   utils.TimeFormat(project.UpdatedAt),
 		}
 		resProjects = append(resProjects, resproject)
 	}
@@ -71,7 +71,7 @@ func GetProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
 	}
-	if user.ID != project.Owner_id {
+	if user.ID != project.OwnerId {
 		if utils.PermissionCheck(user, project) == 0 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для просмотра данного проекта"})
 			return
@@ -81,8 +81,8 @@ func GetProject(c *gin.Context) {
 		ID:          project.ID,
 		Name:        project.Name,
 		Description: project.Description,
-		Created_at:  utils.TimeFormat(project.CreatedAt),
-		Updated_at:  utils.TimeFormat(project.UpdatedAt),
+		CreatedAt:   utils.TimeFormat(project.CreatedAt),
+		UpdatedAt:   utils.TimeFormat(project.UpdatedAt),
 	}
 	c.JSON(http.StatusOK, resproject)
 }
@@ -96,7 +96,7 @@ func EditProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
 	}
-	if user.ID != project.Owner_id {
+	if user.ID != project.OwnerId {
 		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для редактирования данного проекта"})
 			return
@@ -126,8 +126,8 @@ func EditProject(c *gin.Context) {
 		ID:          project.ID,
 		Name:        project.Name,
 		Description: project.Description,
-		Created_at:  utils.TimeFormat(project.CreatedAt),
-		Updated_at:  utils.TimeFormat(project.UpdatedAt),
+		CreatedAt:   utils.TimeFormat(project.CreatedAt),
+		UpdatedAt:   utils.TimeFormat(project.UpdatedAt),
 	}
 	c.JSON(http.StatusOK, resproject)
 }
@@ -141,7 +141,7 @@ func DeleteProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
 	}
-	if user.ID != project.Owner_id {
+	if user.ID != project.OwnerId {
 		if utils.PermissionCheck(user, project) != 2 {
 			c.JSON(http.StatusForbidden, gin.H{"error": "недостаточно прав для удаления данного проекта"})
 			return

@@ -1,0 +1,291 @@
+basePath: /
+definitions:
+  dto.CreateCommentRequest:
+    properties:
+      content:
+        example: Это комментарий к задаче
+        maxLength: 1000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  dto.ErrorResponse:
+    properties:
+      error:
+        example: Произошла ошибка
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        example: example@example.com
+        type: string
+      password_hash:
+        example: "123456"
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password_hash
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        example: example@example.com
+        type: string
+      name:
+        example: vasiliy1234
+        minLength: 1
+        type: string
+      password_hash:
+        example: "123456"
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password_hash
+    type: object
+  dto.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: Операция выполнена успешно
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: Support Team
+  description: API для управления задачами, проектами и комментариями
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: SaaS
+  version: "1.0"
+paths:
+  /api/comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет комментарий по ID. Требуются права редактора или владельца
+        проекта.
+      parameters:
+      - description: ID комментария
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Комментарий удален
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Некорректный запрос
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Недостаточно прав
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Комментарий не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить комментарий
+      tags:
+      - comments
+  /me:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает данные авторизованного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Данные пользователя
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "401":
+          description: Не авторизован
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить информацию о текущем пользователе
+      tags:
+      - users
+  /signin:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует пользователя и возвращает JWT токен в cookie
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный вход
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Вход в систему
+      tags:
+      - auth
+  /signout:
+    post:
+      consumes:
+      - application/json
+      description: Разлогинивает пользователя и удаляет куки авторизации
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: успешный логаут
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "404":
+          description: пользователь не найден
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Выход из системы
+      tags:
+      - auth
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует нового пользователя в системе
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь зарегистрирован
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Неверный запрос или пользователь уже существует
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /tasks/{id}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает все комментарии для указанной задачи. Требуются права
+        просмотра проекта.
+      parameters:
+      - description: ID задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить комментарии задачи
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Создает новый комментарий для указанной задачи. Требуются права
+        редактора или владельца проекта.
+      parameters:
+      - description: ID задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Данные комментария
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать комментарий к задаче
+      tags:
+      - comments
+securityDefinitions:
+  BearerAuth:
+    description: Введите "Bearer {token}" (без кавычек)
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

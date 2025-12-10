@@ -21,7 +21,7 @@ func CreatePermission(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
 	}
-	if user.ID != project.Owner_id {
+	if user.ID != project.OwnerId {
 		c.JSON(http.StatusForbidden, gin.H{"error": "вы не являетесь владельцем данного проекта"})
 		return
 	}
@@ -37,7 +37,7 @@ func CreatePermission(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "указана неверная роль"})
 		return
 	}
-	permission.Project_id = project.ID
+	permission.ProjectId = project.ID
 	var permissionUser models.User
 	result = initializers.DB.First(&permissionUser, "email = ?", body.Email)
 	if result.Error != nil {
@@ -45,9 +45,9 @@ func CreatePermission(c *gin.Context) {
 		return
 	}
 	var permissionCheck models.Permission
-	permission.User_id = permissionUser.ID
+	permission.UserId = permissionUser.ID
 	permission.Role = body.Role
-	result = initializers.DB.First(&permissionCheck, "user_id = ? AND project_id = ?", permission.User_id, project.ID)
+	result = initializers.DB.First(&permissionCheck, "user_id = ? AND project_id = ?", permission.UserId, project.ID)
 	if result.Error == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "у пользователя с таким email уже есть права на данный проект"})
 		return
@@ -73,7 +73,7 @@ func DeletePermission(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "проект не найден"})
 		return
 	}
-	if user.ID != project.Owner_id {
+	if user.ID != project.OwnerId {
 		c.JSON(http.StatusForbidden, gin.H{"error": "вы не являетесь владельцем данного проекта"})
 		return
 	}
