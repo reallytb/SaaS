@@ -138,7 +138,7 @@ func CreateComment(c *gin.Context) {
 //	            "task_title": "Реализовать API",
 //	            "user_name": "Иван Иванов",
 //	            "content": "Это комментарий к задаче",
-//	            "created_at": "2023-12-15 14:30:45"
+//	            "created_at": "2025-12-15 14:30:45"
 //	        }
 //	    ]
 //	}

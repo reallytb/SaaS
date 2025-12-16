@@ -10,6 +10,24 @@ definitions:
     required:
     - content
     type: object
+  dto.CreatePermissionRequest:
+    properties:
+      email:
+        example: example@example.com
+        type: string
+      role:
+        example: viewer/editor
+        type: string
+    type: object
+  dto.CreateProjectRequest:
+    properties:
+      description:
+        example: описание проекта
+        type: string
+      name:
+        example: Написать API
+        type: string
+    type: object
   dto.ErrorResponse:
     properties:
       error:
@@ -130,6 +148,237 @@ paths:
       summary: Получить информацию о текущем пользователе
       tags:
       - users
+  /projects:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список проектов авторизованного пользователя и их описание
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить список проектов
+      tags:
+      - project
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новую запись в таблице проектов.
+      parameters:
+      - description: название и описание проекта
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать проект
+      tags:
+      - project
+  /projects/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет запись из таблицы проектов
+      parameters:
+      - description: id проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить проект
+      tags:
+      - project
+    get:
+      consumes:
+      - application/json
+      description: Возвращает проект и его описание
+      parameters:
+      - description: id проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить конкретный проект
+      tags:
+      - project
+    patch:
+      consumes:
+      - application/json
+      description: Изменяет данные проекта на данные из тела запроса
+      parameters:
+      - description: id проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: название и описание проекта для редактирования
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Изменить проект
+      tags:
+      - project
+  /projects/{id}/share:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новую запись в таблице прав. Требуются права владельца
+        проекта.
+      parameters:
+      - description: ID проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Email и роль для выдачи роли
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Выдать права другому пользователю
+      tags:
+      - permission
+  /projects/{id}/share/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет запись в таблице прав. Требуются права владельца проекта.
+      parameters:
+      - description: ID проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить права у пользователя
+      tags:
+      - permission
   /signin:
     post:
       consumes:
