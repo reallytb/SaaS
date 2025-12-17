@@ -80,7 +80,7 @@ func CreateProject(c *gin.Context) {
 
 // GetProjects godoc
 // @Summary Получить список проектов
-// @Description Возвращает список проектов авторизованного пользователя и их описание
+// @Description Возвращает список проектов авторизованного пользователя и их описание. Требуются права просмотра проекта.
 // @Tags project
 // @Accept json
 // @Produce json
@@ -139,7 +139,7 @@ func GetProjects(c *gin.Context) {
 
 // GetProject godoc
 // @Summary Получить конкретный проект
-// @Description Возвращает проект и его описание
+// @Description Возвращает проект и его описание. Требуются права просмотра проекта.
 // @Tags project
 // @Accept json
 // @Produce json
@@ -206,7 +206,7 @@ func GetProject(c *gin.Context) {
 
 // EditProject godoc
 // @Summary Изменить проект
-// @Description Изменяет данные проекта на данные из тела запроса
+// @Description Изменяет данные проекта на данные из тела запроса. Требуются права редактора проекта.
 // @Tags project
 // @Accept json
 // @Produce json
@@ -309,7 +309,7 @@ func EditProject(c *gin.Context) {
 
 // DeleteProject godoc
 // @Summary Удалить проект
-// @Description Удаляет запись из таблицы проектов
+// @Description Удаляет запись из таблицы проектов. Требуются права редактора проекта.
 // @Tags project
 // @Accept json
 // @Produce json

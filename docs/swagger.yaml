@@ -28,6 +28,27 @@ definitions:
         example: Написать API
         type: string
     type: object
+  dto.CreateTaskRequest:
+    properties:
+      description:
+        example: описание задачи
+        type: string
+      due_date:
+        example: "2025-11-20T13:37:27+00:00"
+        type: string
+      priority:
+        example: low/medium/high
+        type: string
+      status:
+        example: todo/in-progress/done
+        type: string
+      title:
+        example: написать функцию
+        minLength: 1
+        type: string
+    required:
+    - title
+    type: object
   dto.ErrorResponse:
     properties:
       error:
@@ -131,7 +152,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Возвращает данные авторизованного пользователя
+      description: Возвращает данные авторизованного пользователя.
       produces:
       - application/json
       responses:
@@ -152,7 +173,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Возвращает список проектов авторизованного пользователя и их описание
+      description: Возвращает список проектов авторизованного пользователя и их описание.
+        Требуются права просмотра проекта.
       produces:
       - application/json
       responses:
@@ -196,7 +218,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Удаляет запись из таблицы проектов
+      description: Удаляет запись из таблицы проектов. Требуются права редактора проекта.
       parameters:
       - description: id проекта
         in: path
@@ -230,7 +252,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Возвращает проект и его описание
+      description: Возвращает проект и его описание. Требуются права просмотра проекта.
       parameters:
       - description: id проекта
         in: path
@@ -260,7 +282,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Изменяет данные проекта на данные из тела запроса
+      description: Изменяет данные проекта на данные из тела запроса. Требуются права
+        редактора проекта.
       parameters:
       - description: id проекта
         in: path
@@ -379,11 +402,87 @@ paths:
       summary: Удалить права у пользователя
       tags:
       - permission
+  /projects/{id}/tasks:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает все задачи проекта. Требуются права просмотра проекта.
+      parameters:
+      - description: ID проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить задачи проекта
+      tags:
+      - task
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новую запись в таблице задач. Требуются права редактора
+        проекта.
+      parameters:
+      - description: ID проекта
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Название, описание, статус, приоритет и дата завершения задачи
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Создать задачу
+      tags:
+      - task
   /signin:
     post:
       consumes:
       - application/json
-      description: Аутентифицирует пользователя и возвращает JWT токен в cookie
+      description: Аутентифицирует пользователя и возвращает JWT токен в cookie.
       parameters:
       - description: Данные для входа
         in: body
@@ -411,7 +510,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Разлогинивает пользователя и удаляет куки авторизации
+      description: Разлогинивает пользователя и удаляет куки авторизации.
       produces:
       - application/json
       responses:
@@ -432,7 +531,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Регистрирует нового пользователя в системе
+      description: Регистрирует нового пользователя в системе.
       parameters:
       - description: Данные для регистрации
         in: body
@@ -454,6 +553,115 @@ paths:
       summary: Регистрация пользователя
       tags:
       - auth
+  /tasks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет запись в таблице задач. Требуются права редактора проекта.
+      parameters:
+      - description: ID задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Удалить
+      tags:
+      - task
+    patch:
+      consumes:
+      - application/json
+      description: Изменяет запись в таблице задач. Требуются права редактора проекта.
+      parameters:
+      - description: ID задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Название, описание, статус, приоритет и дата завершения задачи
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Изменить задачу
+      tags:
+      - task
+    post:
+      consumes:
+      - application/json
+      description: Возвращает одну конкретную задачу. Требуются права просмотра проекта.
+      parameters:
+      - description: ID задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить задачу
+      tags:
+      - task
   /tasks/{id}/comments:
     get:
       consumes:

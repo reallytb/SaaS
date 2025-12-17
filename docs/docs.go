@@ -80,7 +80,7 @@ const docTemplate = `{
         },
         "/me": {
             "get": {
-                "description": "Возвращает данные авторизованного пользователя",
+                "description": "Возвращает данные авторизованного пользователя.",
                 "consumes": [
                     "application/json"
                 ],
@@ -114,7 +114,7 @@ const docTemplate = `{
         },
         "/projects": {
             "get": {
-                "description": "Возвращает список проектов авторизованного пользователя и их описание",
+                "description": "Возвращает список проектов авторизованного пользователя и их описание. Требуются права просмотра проекта.",
                 "consumes": [
                     "application/json"
                 ],
@@ -185,7 +185,7 @@ const docTemplate = `{
         },
         "/projects/{id}": {
             "get": {
-                "description": "Возвращает проект и его описание",
+                "description": "Возвращает проект и его описание. Требуются права просмотра проекта.",
                 "consumes": [
                     "application/json"
                 ],
@@ -232,7 +232,7 @@ const docTemplate = `{
                 ]
             },
             "delete": {
-                "description": "Удаляет запись из таблицы проектов",
+                "description": "Удаляет запись из таблицы проектов. Требуются права редактора проекта.",
                 "consumes": [
                     "application/json"
                 ],
@@ -285,7 +285,7 @@ const docTemplate = `{
                 ]
             },
             "patch": {
-                "description": "Изменяет данные проекта на данные из тела запроса",
+                "description": "Изменяет данные проекта на данные из тела запроса. Требуются права редактора проекта.",
                 "consumes": [
                     "application/json"
                 ],
@@ -473,9 +473,126 @@ const docTemplate = `{
                 ]
             }
         },
+        "/projects/{id}/tasks": {
+            "get": {
+                "description": "Возвращает все задачи проекта. Требуются права просмотра проекта.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Получить задачи проекта",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID проекта",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "description": "Создаёт новую запись в таблице задач. Требуются права редактора проекта.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Создать задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID проекта",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Название, описание, статус, приоритет и дата завершения задачи",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
         "/signin": {
             "post": {
-                "description": "Аутентифицирует пользователя и возвращает JWT токен в cookie",
+                "description": "Аутентифицирует пользователя и возвращает JWT токен в cookie.",
                 "consumes": [
                     "application/json"
                 ],
@@ -520,7 +637,7 @@ const docTemplate = `{
         },
         "/signout": {
             "post": {
-                "description": "Разлогинивает пользователя и удаляет куки авторизации",
+                "description": "Разлогинивает пользователя и удаляет куки авторизации.",
                 "consumes": [
                     "application/json"
                 ],
@@ -554,7 +671,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "Регистрирует нового пользователя в системе",
+                "description": "Регистрирует нового пользователя в системе.",
                 "consumes": [
                     "application/json"
                 ],
@@ -590,6 +707,176 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/tasks/{id}": {
+            "post": {
+                "description": "Возвращает одну конкретную задачу. Требуются права просмотра проекта.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Получить задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "description": "Удаляет запись в таблице задач. Требуются права редактора проекта.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Удалить",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "description": "Изменяет запись в таблице задач. Требуются права редактора проекта.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Изменить задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Название, описание, статус, приоритет и дата завершения задачи",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
             }
         },
         "/tasks/{id}/comments": {
@@ -748,6 +1035,35 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Написать API"
+                }
+            }
+        },
+        "dto.CreateTaskRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "описание задачи"
+                },
+                "due_date": {
+                    "type": "string",
+                    "example": "2025-11-20T13:37:27+00:00"
+                },
+                "priority": {
+                    "type": "string",
+                    "example": "low/medium/high"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "todo/in-progress/done"
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "написать функцию"
                 }
             }
         },

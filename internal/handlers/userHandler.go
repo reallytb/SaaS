@@ -18,7 +18,7 @@ import (
 
 // SignUp godoc
 // @Summary Регистрация пользователя
-// @Description Регистрирует нового пользователя в системе
+// @Description Регистрирует нового пользователя в системе.
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -113,7 +113,7 @@ func SignUp(c *gin.Context) {
 
 // SignIn godoc
 // @Summary Вход в систему
-// @Description Аутентифицирует пользователя и возвращает JWT токен в cookie
+// @Description Аутентифицирует пользователя и возвращает JWT токен в cookie.
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -202,7 +202,7 @@ func SignIn(c *gin.Context) {
 
 // SignOut godoc
 // @Summary Выход из системы
-// @Description Разлогинивает пользователя и удаляет куки авторизации
+// @Description Разлогинивает пользователя и удаляет куки авторизации.
 // @Tags auth
 // @Accept json
 // @Produce json
@@ -243,7 +243,7 @@ func SignOut(c *gin.Context) {
 
 // Me godoc
 // @Summary Получить информацию о текущем пользователе
-// @Description Возвращает данные авторизованного пользователя
+// @Description Возвращает данные авторизованного пользователя.
 // @Tags users
 // @Accept json
 // @Produce json
